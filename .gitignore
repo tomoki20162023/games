@@ -1,4 +1,5 @@
 # files
+.gitignore
 cp-to.sh
 cp-from.sh
 
