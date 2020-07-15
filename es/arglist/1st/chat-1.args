@@ -1,0 +1,15 @@
+"mousemove 390 670"
+"mousermove -15 -60"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove -170 40"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove 0 -40"
+"mouseclick 1"
+"usleep 500000"
+
+"str 1"
+"sleep 1"

@@ -1,0 +1,34 @@
+"usleep 500000"
+
+"mousermove 140 -170"
+"usleep 500000"
+
+"mousermove 80 65"
+"usleep 500000"
+"mousermove 10 36"
+"usleep 500000"
+
+"mousermove -10 -36"
+"mousermove 0 78"
+"usleep 500000"
+"mousermove 10 -42"
+"usleep 500000"
+
+"mousermove -10 42"
+"mousermove 0 78"
+"usleep 500000"
+"mousermove 10 -120"
+"usleep 500000"
+
+"mousermove -10 120"
+"mousermove 0 78"
+"usleep 500000"
+"mousermove 10 -198"
+"usleep 500000"
+
+"mousermove -10 198"
+"mousermove 0 78"
+"usleep 500000"
+"mousermove 10 -276"
+"usleep 500000"
+

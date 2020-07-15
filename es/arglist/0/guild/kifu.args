@@ -1,0 +1,10 @@
+"mousermove -70 0"
+"usleep 300000"
+"usleep 200000"
+
+"mousermove 70 120"
+"usleep 300000"
+"usleep 200000"
+
+"mousermove 0 -120"
+"usleep 200000"

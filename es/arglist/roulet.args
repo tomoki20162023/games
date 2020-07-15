@@ -1,0 +1,9 @@
+"mouseclick 1"
+"usleep 400000"
+"mousermove 0 130"
+"sleep 5"
+
+"mouseclick 1"
+"usleep 400000"
+"mousermove 0 -130"
+"usleep 300000"

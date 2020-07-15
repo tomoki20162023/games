@@ -1,0 +1,56 @@
+"mousemove 88 670"
+"mousermove 20 -25"
+"mousermove 60 0"
+"mousermove 40 0"
+"mousermove 40 0"
+"mousermove 40 0"
+
+"mouseclick 1"
+"sleep 1"
+
+"mousermove 0 -50"
+"usleep 100000"
+"mousedown 1"
+"usleep 200000"
+"mousermove 0 -100"
+"usleep 500000"
+"mouseup 1"
+"usleep 500000"
+
+"mousermove 0 80"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove -100 30"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove 20 -130"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove 70 130"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove -10 -70"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove 0 -100"
+"mouseclick 1"
+"usleep 500000"
+
+"mousermove 85 -200"
+"mouseclick 1"
+"usleep 500000"
+
+"mousemove 88 137"
+"mousermove 10 10"
+"mouseclick 1"
+"usleep 500000"
+
+"mousemove 88 137"
+"mousermove 10 10"
+"mouseclick 1"
+"usleep 500000"
