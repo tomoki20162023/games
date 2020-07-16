@@ -1,0 +1,11 @@
+clicks = Input("クリック回数", 60)
+//interval = Input("クリックの間隔", 0.5)
+strInterval = SlctBox(SLCT_LST OR SLCT_STR, 5, "クリックの間隔[ms]", 125, 250, 500, 750, 1000)
+interval = Val(strInterval, 0) / 1000
+
+If interval = 0 Then ExitExit
+
+FOR t = 1 TO clicks
+	BTN(LEFT,CLICK)
+	Sleep(interval)
+NEXT

@@ -1,0 +1,174 @@
+/// マウスコントロールの自動化まわりに関する共通のモジュール
+
+Module Common
+
+/// 定数
+// よく使う待ち時間 [ms]
+Const Wait0 = 10
+Const Wait1 = 250
+Const Wait2 = 500
+Const Wait3 = 750
+Const Wait4 = 1000
+
+// ２次元座標を配列で扱うときに使う
+Const IX = 0
+Const IY = 1
+
+/// 公開変数
+// クライアント座標に変換するときに設定（多分必要・・・）
+// スタック式にするか・・・
+Public Dim OFFSET_X = 0
+Public Dim OFFSET_Y = 0
+Public Dim POFFSET[1]
+
+// コンストラクタ
+Procedure Common
+Fend
+
+// 公開関数
+Procedure SetOffset(x, y)
+	OFFSET_X = x
+	OFFSET_Y = y
+	_SetOffset2D()
+	Print "Common : " + x + "<#TAB>" + y
+Fend
+
+Procedure Moving(x, y)
+	AddOffset(x, y)
+	// deltaの取り方
+	// 7, 36, 118
+	// 3, 22, 153
+	// 3, 13, 53, 213
+	// 7, 50
+	DeltaMove(x, y, 213)
+	DeltaMove(x, y, 53)
+	DeltaMove(x, y, 13)
+	DeltaMove(x, y, 3)
+	MMV(x, y, Wait0)
+Fend
+
+Procedure Moving2(p[1])
+	Moving(p[IX], p[IY])
+Fend
+
+Procedure MovingClick(x, y, n=1)
+	Moving(x, y)
+
+	For i = 1 To n
+		WaitClick(Wait2)
+	Next
+Fend
+
+Procedure MovingClick2(p[1], n=1)
+	MovingClick(p[IX], p[IY], n)
+Fend
+
+Procedure WaitClick(wait)
+	Sleep(wait/1000)
+	BTN(LEFT,CLICK)
+	Sleep(Wait1/1000)
+Fend
+
+
+Procedure DeltaMove(xe, ye, d)
+	Dim p[1]
+	Dim dx, nx, nxe
+	Dim dy, ny, nye
+
+	GetMousePos2(p)
+
+	_DeltaMoveHelper(p[IX], xe, d, dx, nx, nxe)
+	_DeltaMoveHelper(p[IY], ye, d, dy, ny, nye)
+
+	updated = (nx < nxe OR ny < nye)
+	While updated
+		updated = False
+
+		If nx < nxe Then
+			p[IX] = p[IX] + dx; nx = nx + 1; updated = True
+		EndIf
+		If ny < nye Then
+			p[IY] = p[IY] + dy; ny = ny + 1; updated = True
+		EndIf
+
+		MMV(p[IX], p[IY], Wait0)
+	Wend
+Fend
+
+Procedure Drag(dx, dy)
+	Dim p[1]
+	GetMousePos2(p)
+	Sleep(Wait2/1000)
+
+	BTN(LEFT, DOWN)
+	Moving(p[IX]+dx, p[IY]+dy)
+	Sleep(Wait3/1000)
+	BTN(LEFT, UP)
+
+	Moving2(p)
+	Sleep(Wait2/1000)
+Fend
+
+Procedure Drag2(dp[1])
+	Drag(dp[IX], dp[IY])
+Fend
+
+Procedure GetMousePos(Var x, Var y)
+	GetMousePosGlobal(x, y)
+	SubOffset(x, y)
+Fend
+
+Procedure GetMousePos2(Var p[1])
+	GetMousePos(p[IX], p[IY])
+Fend
+
+Procedure GetMousePosGlobal(Var x, Var y)
+	x = G_MOUSE_X
+	y = G_MOUSE_Y
+Fend
+
+Procedure GetMousePosGlobal2(Var p[1])
+	GetMousePosGlobal(p[IX], p[IY])
+Fend
+
+Procedure AddOffset(Var x, Var y)
+	x = x + OFFSET_X
+	y = y + OFFSET_Y
+Fend
+
+Procedure SubOffset(Var x, Var y)
+	x = x - OFFSET_X
+	y = y - OFFSET_Y
+Fend
+
+Procedure AddOffset2(Var p[1])
+	AddOffset(p[IX], p[IY])
+Fend
+
+Procedure SubOffset2(Var p[1])
+	SubOffset(p[IX], p[IY])
+Fend
+
+// 局所関数
+Procedure _DeltaMoveHelper(f, fe, d, Var df, Var n, Var ne)
+	If fe >= f Then df = d Else df = -d
+	ne = INT( (fe - f) / df )
+	n = 1
+Fend
+
+Procedure _Add2D(Var p1[1], Var p2[1])
+	p1[IX] = p1[IX] + p2[IX]
+	p1[IY] = p1[IY] + p2[IY]
+Fend
+
+Procedure _Sub2D(Var p1[1], Var p2[1])
+	p1[IX] = p1[IX] - p2[IX]
+	p1[IY] = p1[IY] - p2[IY]
+Fend
+
+Procedure _SetOffset2D()
+	POFFSET[IX] = OFFSET_X
+	POFFSET[IY] = OFFSET_Y
+Fend
+
+EndModule

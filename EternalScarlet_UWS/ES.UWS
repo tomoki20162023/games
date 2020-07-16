@@ -1,0 +1,1541 @@
+TextBlock TODO
+	丸い赤地のビックリマークを検出する
+		RGB = 232,43,26 が検出しやすいか？
+		５点くらい移動させて検出しやすいような方法をとる？
+
+	MovingなどのG_MOUSE_[XY]で位置を指定している部分
+		ブラウザのオフセットが考慮されていないので
+		必ず左枠をぴったり画面左端にくっつけるか対策を考える
+		左枠が負の座標になっていると座標変換が上手くいかない・・・
+
+	関数内でオフセットを考慮しているかどうかを関数名に反映させる
+		クライアント座標で指定する必要があるかどうかが基準？
+
+EndTextBlock
+
+
+Module ES
+
+// 定数
+Const Wait0 = 10
+Const Wait1 = 250
+Const Wait2 = 500
+Const Wait3 = 750
+Const Wait4 = 1000
+
+//?? 座標を配列で扱うときに使うかも
+Const IX = 0
+Const IY = 1
+
+// 公開変数
+Public ESInitialize
+
+// ローカル変数
+Dim WinId
+Dim IsDebug = False
+Dim ESBaseX
+Dim ESBaseY
+Dim CLX
+Dim CLY
+
+Dim PESBase[1]
+Dim PESCL[1]
+
+// コンストラクタ
+Procedure ES
+	WinId = GetId("エターナルスカーレット - Google Chrome")
+	//ACW(WinId,0,0,1920,1030,0)
+	CtrlWin(WinId, ACTIVATE)
+	//CtrlWin(WinId, MAX)
+	MouseOrg(WinId)
+
+	ESInitialize = True
+	/// ブラウザ最大化＋ズーム90%
+	// ESBaseX = 685
+	ESBaseX = PeekLeftEdge()
+	ESBaseY = 140
+	PESBase[IX] = ESBaseX
+	PESBase[IY] = ESBaseY
+
+	CLX = Status(WinId, ST_CLX)
+	CLY = Status(WinId, ST_CLY)
+	PESCL[IX] = CLX
+	PESCL[IY] = CLY
+Fend
+
+// Public Procedures/Functions
+Procedure SelectActions()
+	Dim menu[] = "よく使う", "左メニュー", "右メニュー", "ギルド", "調整中", "1st", "移動", "終了"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	Repeat
+		x = SLCTBOX(SLCT_LST OR SLCT_NUM, 60, G_MOUSE_X, G_MOUSE_Y, "メインメニュー選択", menu)
+		Select x
+			Case 0; MenuWellUsed
+			Case 1; MenuLeft
+			Case 2; MenuRight
+			Case 3; MenuGuild
+			Case 4; MenuAdjustment
+			Case 5; Menu1st
+			Case 6; MenuMove
+			Case 7; ExitExit
+			// その他メニュー予約領域
+
+			Default; MenuCancel; ExitExit
+		SelEnd
+	Until ! (0 <= x And x <= 6)
+Fend
+
+Procedure MenuWellUsed()
+	Dim menu[] = "アイテムバッグクリア", "アイテムボックス回収", _
+		"強化精錬", "魔法学院スキルアップ", "無限の迷宮", "闘技場", "小隊評価", _
+		"ステージ攻略中", "メイドカフェ確認", "符文装着", "メイン画面ボス挑戦", _
+		"ステージボス切替",_
+		"前のメニューへ"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	Repeat
+		x = SLCTBOX(SLCT_LST OR SLCT_NUM, 60, G_MOUSE_X, G_MOUSE_Y, "よく使うメニュー選択", menu)
+		Select x
+			Case 0; ClearItemBag
+			Case 1; OpenItemBagBoxes
+			Case 2; UpdateEquip
+			Case 3; ResearchMagic
+			Case 4; MugenMaze
+			Case 5; ClearBattle
+			Case 6; ShoutaiHyouka
+			Case 7; ChallangingStage
+			Case 8; CheckMaidCafe
+			Case 9; HubunSetting
+			Case 10; TopBossChallange
+			Case 11; SwitchStageBoss
+			Case 12; Break
+
+			Default; MenuCancel; ExitExit
+		SelEnd
+	Until ! (0 <= x And x < Length(menu))
+
+Fend
+
+Procedure Menu1st()
+	Dim menu[] = "ログイン直後一括", "迷宮", "ダイヤ消費", "メイドカフェ", "チャット"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	x = POPUPMENU(menu)
+	Select x
+		Case 0; Daily1stActions
+		Case 1; Maze1st
+		Case 2; DailyDiamond1st
+		Case 3; DailyMaidCafe1st
+		Case 4; DailyChat1st
+		
+		Default; MenuCancel; ExitExit
+	SelEnd
+Fend
+
+Procedure MenuLeft()
+	Dim menu[] = "PK", "ステージボーナス"
+	// 移動のみ : "傭兵", "戦闘", "BOSS", "魔王領域", "王城"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	x = POPUPMENU(menu)
+	Select x
+		Case 0; PKs
+		Case 1; GetStageBonus
+
+		Default; MenuCancel; ExitExit
+	SelEnd
+Fend
+
+Procedure MenuRight()
+	Dim menu[] = "一括確認", "メール受取", "日活完了", "日活回収", "次元の壁", "成就"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	x = POPUPMENU(menu)
+	Select x
+		Case 0; CheckRightMenu
+		Case 1; MailAccept
+		Case 2; DailyCompleted
+		Case 3; DailyActivity
+		Case 4; DailyDimensionWall
+		Case 5; GetJohju
+
+		Default; MenuCancel; ExitExit
+	SelEnd
+Fend
+
+Procedure MenuGuild()
+	Dim menu[] = "寄付", "寄付報酬", "迷宮探索", "日活回収"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	x = POPUPMENU(menu)
+	Select x
+		Case 0; GuildKifu
+		Case 1; GuildKifuHoushu
+		Case 2; AttackGuildMaze
+		Case 3; GetGuildActivity
+
+		Default; MenuCancel; ExitExit
+	SelEnd
+Fend
+
+Procedure MenuMove()
+	Dim menu[] = "メイン下メニュー", "メイン左メニュー", "メイン右メニュー", _
+		"王城下メニュー", "ギルド日常任務", "王城を出る", "戻る", "終了"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	Repeat
+		x = POPUPMENU(menu)
+		Select x
+			Case 0; MoveBottomMenu
+			Case 1; MoveLeftMenu
+			Case 2; MoveRightMenu
+			Case 3; MoveOujouBottomMenu
+			Case 4; MoveGuildDaily
+			Case 5; GetOutOfOujou
+			Case 6; Return
+			Case 7; ExitExit
+
+			Default; MenuCancel; ExitExit
+		SelEnd
+	Until ! (0 <= x And x < Length(menu))
+Fend
+
+Procedure MenuAdjustment()
+	Dim menu[] = "テスト", "デイリー日活回収", "称号強化", _
+		"位置と色の調査", "アクションマークの調査", _
+		"器霊分解", "器霊取得"
+	For i=1 To Length(menu); menu[i-1] = i + ". " + menu[i-1]; Next
+
+	x = POPUPMENU(menu)
+	Select x
+		Case 0; test
+		Case 1; DailyActivity
+		Case 2; ShougouKyouka
+		Case 3; TestPosColor
+		Case 4; checkActionPos(GetMousePosESX(), GetMousePosESY())
+		Case 5; KireiAllDecomposition
+		Case 6; GetKirei
+
+		Default; MenuCancel; ExitExit
+	SelEnd
+Fend
+
+Procedure ClearItemBag()
+	Dim BagOpen[] = 400,860
+	Dim Decomposition[] = 300,730
+	Dim BunchDecomp[] = 220,670
+	Dim BoxClose[] = 450,195
+
+	MovingClick2(BagOpen) // バッグを開く
+	MovingClick2(Decomposition) // 分解
+	MovingClick2(BunchDecomp) // 一括分解
+	AllDecomposition
+
+	MovingClick2(BoxClose) // 閉じる
+	Return // バッグを閉じる
+Fend
+
+Procedure PKs()
+	Dim attacks[8]
+	Dim items[Length(attacks)-1]
+	For i=1 To 8
+		attacks[i-1] = i
+		items[i-1] = i + ". " + attacks[i-1]
+	Next
+
+	BalloonAtMouse("挑戦回数は？")
+	x = POPUPMENU(items)
+	Balloon()
+	If ! (x >= 0) Then
+		BalloonAtMouse("キャンセル")
+		Balloon()
+		Exit
+	EndIf
+
+	For i = 1 To attacks[x]
+		CountBalloon(i, attacks[x])
+		PKOnce
+		Sleep(4)
+	Next
+	Balloon()
+Fend
+
+Procedure PKOnce()
+	Dim BComfirm[] = 280, 620
+	Dim BChallange[] = 360, 525
+	Dim BAttack[] = 295, 630
+
+	MovingClick2(BComfirm) // 挑戦後確認
+	MovingClick2(BChallange) // 挑戦
+	MovingClick2(BAttack) // 出撃
+Fend
+
+Procedure DailyCompleted()
+	ColorCompleted = 250
+	Dim BCompleted[] = 440, 290
+	Dim BOK[] = 290, 585
+
+	Moving2(BCompleted)
+	While CheckColor2(BCompleted, ColorCompleted, 0, 0, 5)
+		WaitClick(Wait1)
+		MovingClick2(BOK)
+		Sleep(Wait2/1000)
+		Moving2(BCompleted)
+	Wend
+Fend
+
+Procedure DailyDiamond1st()
+	SelectBottomMenu(6)
+	MovingClick(88, 250)
+	MovingClick(119, 485)
+	MovingClick(255, 650)
+	MovingClick(360, 515)
+	MovingClick(260, 585)
+	Return(2)
+Fend
+
+Procedure DailyMaidCafe1st()
+	CheckMaidCafe(True)
+Fend
+
+
+Procedure DailyChat1st()
+	MovingClick(455,800)
+	MovingClick(196,860)
+	MovingClick(223,810)
+
+	A = ASC("A")
+	Z = ASC("Z")
+	KBD(A+Int(Random(Z-A+1)),CLICK,Wait3)
+
+	Moving(-128, 880)
+	Drag(256, 0)
+	// MovingClick(STATUS(WinId, ST_WIDTH) - 150, STATUS(WinId, ST_HEIGHT) - 150)
+
+	MovingClick(361,810)
+	MovingClick(480,370)
+Fend
+
+Procedure CheckMaidCafe(act1st=False)
+	SelectBottomMenu(4)
+
+	x = GetMousePosESX()
+	y = GetMousePosESY() - 70
+	Moving(x, y)
+	Drag(0, -180)
+	MovingClick(x, y)
+
+	MovingClick(130, 790) // 収益受領
+	MovingClick(275, 570) // OK
+
+	If act1st = True Then
+		MovingClick(350, 785) // 接客
+		MovingClick(265, 675) // 接客開始
+		MovingClick(350, 505) // ダイヤ消費確認
+		MovingClick(450, 165) // Close
+	EndIf
+
+	Return
+Fend
+
+Procedure DailyActivity()
+	// offset : 55, 55, 55, 105
+	Dim BOK[1] = 245,560
+	Dim itemLast[1] = 467,805
+	Dim itemBase[1] = 203,805
+	Dim itemSpan[1] = 55, 0
+
+	For i = 0 To 3
+		x = itemBase[IX]+i*itemSpan[IX]
+		y = itemBase[IY]
+		Moving(x, y)
+		If ! hasAction(x, y) Then Continue
+		SelectEquidistantItems2(i, 4, itemBase, itemSpan)
+		MovingClick2(BOK)
+	Next
+
+	Moving2(itemLast)
+	If ! hasAction2(itemLast) Then Exit
+	MovingClick2(itemLast)
+	MovingClick2(BOK)
+Fend
+
+Procedure DailyDimensionWall()
+	Dim BOK[] = 245,560
+
+	// 次元の壁
+	MovingClick(BOK[IX], BOK[IY]-465)
+	Moving(BOK[IX], BOK[IY]+275)
+
+	// LvUP
+	Dim BLvup[] = 314,812
+	TextBlock tb1
+		Moving2(BLvup)
+		AddESOffset2(BLvup)
+		PrintColor(BLvup[IX], BLvup[IY])
+		PrintOffsetPos(BLvup[IX], BLvup[IY])
+		SubESOffset2(BLvup)
+
+		ESBaseX:306; Mouse( 632, 952 ) : Color(R,G,B) = ( 233, 42, 26 )
+		  (x, y) = (632, 952) => (326, 812)
+		ESBaseX:306; Mouse( 631, 957 ) : Color(R,G,B) = ( 232, 43, 26 )
+		  (x, y) = (631, 957) => (325, 817)
+	EndTextBlock
+
+	While CheckColor2(BLvup, 232)
+		MovingClick2(BLvup)
+		Moving(BLvup[IX]+100, BLvup[IY])
+	Wend
+
+	Return
+Fend
+
+Procedure AttackGuildMaze()
+	Dim BChallange[] = 220,710
+	Dim BOK[] = 245, 600
+	Dim tmax = 18
+	For t = 1 To tmax
+		CheckedClick2(BChallange)
+		CountBalloon(t, tmax)
+		Sleep(4)
+		CheckedClick2(BOK)
+		Balloon()
+	Next
+Fend
+
+Procedure OpenItemBagBoxes()
+	Dim Box[] = 60,170
+	Dim Get[] = 250,670
+	Dim Back[] = 250,590
+	// 間違って、金銀銅の箱を開けないようにGet, BackのXは調整済
+
+	Dim ns[] = 1, 2, 3, 4, 8, 12, 16, 20
+	Dim items[Length(ns)-1]
+	For i=1 To Length(ns); items[i-1] = i + ". " + ns[i-1]; Next
+
+	BalloonAtMouse("いくつボックスを開けますか？")
+	x = POPUPMENU(items)
+	Balloon()
+
+	If x >= 0 Then
+		For t = 1 To ns[x]
+			MovingClick2(Box)
+			CountBalloon(t, ns[x])
+			MovingClick2(Get)
+			MovingClick2(Back)
+		Next
+	Else
+		BalloonAtMouse("キャンセル")
+	EndIf
+	Moving(Box[IX]+300, Box[IY]-80)
+	Balloon()
+Fend
+
+Procedure Maze1st()
+	Dim MazeTab[] = 248,100
+	Dim Back[] = 455,280
+
+	Dim mazeBase[1] = 442, 220
+	DIm mazeSpan[1] = 0, 130
+	Dim maze[1] = mazeBase[IX],mazeBase[IY]
+
+	// 迷宮タブを開く
+	SelectLeftMenu(2) // 左メニュー > 戦闘
+	MovingClick2(MazeTab) // 迷宮タブ
+	Sleep(1)
+
+	// 各迷宮を回収
+	For i = 0 To 4
+		If hasAction2(maze) Then
+			SelectEquidistantItems2(i, 5, mazeBase, mazeSpan)
+			MovingClick2(Back)
+		EndIf
+		maze[IY] = maze[IY] + mazeSpan[IY]
+	Next
+
+	// 閉じる
+	MovingClick(450,270)
+	Return
+Fend
+
+Procedure GetGuildActivity()
+	// Mouse( 302, 849 ) : Color(R,G,B) = ( 232, 43, 26 )
+	// 198, 719
+	// ok 2, 4
+	// offset: 55, 55, 50, 110
+	// offset-now: 54, 57, 52, 106
+	Dim ItemXs[] = 192,246,303,355,461
+	Dim item[1] = 0, 713
+	Dim BOK[] = 310,580
+
+	For itemX In ItemXs
+		item[IX] = itemX
+		Moving2(item)
+		//Print FormatPosInfo("hasAction", itemX, itemY) + hasAction(itemX, ItemY)
+		If hasAction2(item) Then
+			MovingClick2(item)
+			MovingClick2(BOK)
+		EndIf
+	Next
+Fend
+
+Procedure ClearBattle()
+	Dim BChallenge[] = 362, 595
+	Dim BOK[] = 315,620
+
+	Dim attacks[5]
+	Dim items[Length(attacks)-1]
+	
+	For i=0 To Length(attacks)-1
+		attacks[i] = i+1
+		items[i] = (i+1) + ". " + attacks[i]
+	Next
+
+	BalloonAtMouse("掃討回数は？")
+	x = POPUPMENU(items)
+	Balloon()
+	If ! (0 <= x And x <= 5) Then Exit
+
+	For t = 1 To attacks[x]
+		MovingClick2(BChallenge)
+		MovingClick2(BOK)
+	Next
+	Return
+Fend
+
+Procedure UpdateEquip()
+	MovingClick(197,733) // 強化
+	MovingClick(226,533) // 精錬画面へ
+	MovingClick(205,726) // 精錬
+	MovingClick(82,730) // 強化画面へ
+Fend
+
+Procedure GetJohju()
+	SelectRightMenu(3) // 成就
+	MovingClick(303,860) // 一括受取
+	Return
+Fend
+
+Procedure ResearchMagic()
+	// 研究ボタン
+	Dim BResearch[] = 300,800
+
+	// キャラアイコン
+	Dim IconsX[] = 228,295,357,147
+	Dim icon[1] = 0, 85
+//	IconY = 85
+
+	Dim counts[] = 1,2,3,4
+	Dim items[Length(counts)-1]
+	For i=1 To Length(counts); items[i-1] = i + ". " + counts[i-1]; Next
+
+	BalloonAtMouse("研究のクリック回数は？")
+	Dim x = POPUPMENU(items)
+	Balloon()
+	If ! (0 <= x And x < 4) Then Exit
+
+	Dim count = counts[x]
+	For iconX In IconsX
+		icon[IX] = iconX
+		For i = 1 To count
+			MovingClick2(BResearch)
+		Next
+		MovingClick2(icon)
+	Next
+Fend
+
+Procedure Daily1stActions()
+	ClearItemBag
+	DailyMaidCafe1st
+	DailyDiamond1st
+	Maze1st
+	DailyChat1st
+Fend
+
+Procedure GuildKifu()
+	MovingClick(305,510)
+	MovingClick(390,735)
+	Moving(390,510)
+Fend
+
+Procedure GuildKifuHoushu()
+	// offset : 104, 107
+	Dim PHoushu[2][1]=249,820,353,820,460,820
+	For i=0 To 2
+		GuildKifuHoushuOnce(PHoushu[i])
+	Next
+	Return
+Fend
+
+Procedure MugenMaze()
+	// ドア関連定数
+	DoorSpan = 114
+	DoorLeftX = 105
+	Dim DoorXs[3]
+	DoorY = 450
+	Dim door[] = 0, DoorY
+
+	For i = 0 To 2
+		DoorXs[i] = DoorLeftX + i * DoorSpan
+	Next
+
+	// 戻るボタン
+	BtnBackX = 200
+	BtnBackY = 740
+	Dim BBack[] = 200, 740
+
+	// 次へボタン
+	BtnNextX = 205
+	BtnNextY = 624
+	Dim BNext[] = 205, 624
+
+	Public Dim judgeDoors[3]
+	Public OrgColor
+
+	// Print "Started."
+
+	tmax = INPUT("無限の迷宮：試行回数を入力", 10)
+	ClearJudgeFlags
+	OrgColor = PeekColorES2(BNext)
+
+	Dim countMove[1] = DoorXs[0],DoorY
+
+	For t = 1 To tmax
+		Moving2(countMove)
+		CountBalloon(t, tmax)
+
+		For d = 0 To 2
+			If IsDebug Then PrintFlags
+			If judgeDoors[d] = True Then Continue
+
+			door[IX] = DoorXs[d]
+
+			If JudgeDoorFlag(door, judgeDoors[d]) = True Then Continue
+			If IsDebug Then PrintFlags
+
+			DoorClick(door, judgeDoors[d])
+			Sleep(Wait1/1000)
+
+			If IsDebug Then Print "check back"
+			CheckedClickForBack(BBack)
+
+			If IsDebug Then Print "click next"
+			CheckedClickForNext(BNext)
+
+			If IsDebug Then PrintFlags
+		Next
+	Next
+	Balloon()
+
+	// Print "Finished."
+	// LogPrint(FALSE)
+Fend
+
+Procedure ShoutaiHyouka()
+	Dim items[] = "ビール", "ワイン"
+	Dim pos[1][1] = 390, 365, 390, 465
+	Dim BSend[1] = 298, 678
+	Dim BBack[1] = 456, 269
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	MovingClick(204, 815) // 賄賂を贈る
+	x = POPUPMENU(items)
+	Select x
+		Case 0; // ビール
+			MovingClick2(pos[0])
+			MovingClick2(BSend) // 送る
+		Case 1; // ワイン
+			MovingClick2(pos[1])
+			MovingClick2(BSend) // 送る
+		Default; MenuCancel;
+	SelEnd
+	MovingClick2(BBack) // 戻る
+	Return
+Fend
+
+Procedure ShougouKyouka()
+	MovingClick(278,103)
+	MovingClick(374,456)
+	MovingClick(302,840)
+	//MovingClick(312,658)
+	Return
+Fend
+
+Procedure MailAccept()
+	SelectRightMenu(1) // メール
+	// MovingClick(481, 416) // メール
+	MovingClick(312, 842) // 一括受領
+
+	// ESBaseX:306; Mouse( 624, 725 ) : Color(R,G,B) = ( 251, 74, 45 )
+	x = 320
+	y = 585
+	Dim p[] = x, y
+	Moving2(p) // 受領OK
+	Sleep(Wait2/1000)
+	rThreshold = 245
+	r = PeekColorES2(p, COL_R)
+	While r > rThreshold
+		MovingClick2(p)
+		Moving(x+100, y+100)
+		Sleep(Wait2/1000)
+		Moving2(p)
+		r = PeekColorES2(p, COL_R)
+	Wend
+
+	Return
+Fend
+
+Procedure CheckRightMenu()
+
+TextBlock tb2
+アクション有の位置
+メール
+	y = 453 - (507 - 453) = 399 ?
+日常
+	ESBaseX:306; Mouse( 804, 593 ) : Color(R,G,B) = ( 232, 43, 26 )
+		(x, y) = (804, 593) => (498, 453)
+成就
+	ESBaseX:306; Mouse( 805, 647 ) : Color(R,G,B) = ( 232, 43, 26 )
+		(x, y) = (805, 647) => (499, 507)
+
+EndTextBlock
+
+	Dim PMail[] = 479,409
+	Dim PDaily[] = 479,463
+	Dim PJohju[] = 479,517
+
+	If hasAction2(PMail) Then
+		Moving2(PMail)
+		MailAccept
+		Sleep(1)
+	EndIf
+
+	If hasAction2(PDaily) Then
+		Moving2(PDaily)
+		SelectRightMenu(2)
+		DailyCompleted
+		DailyActivity
+		DailyDimensionWall
+		Sleep(1)
+	EndIf
+
+	If hasAction2(PJohju) Then
+		GetJohju
+	EndIf
+Fend
+
+Procedure ChallangingStage()
+	ClearItemBag
+	Sleep(Wait2/1000)
+	GetStageBonus
+	Sleep(Wait2/1000)
+	GetJohju
+Fend
+
+Procedure TopBossChallange()
+	MovingClick(261, 753) // ボス挑戦
+	MovingClick(40,630) // 他キャラ非表示
+Fend
+
+Procedure GetStageBonus()
+//ESBaseX:114; Mouse( 173, 788 ) : Color(R,G,B) = ( 232, 43, 26 )
+//  (x, y) = (173, 788) => (59, 648)
+	Dim bonus[] = 49, 658
+
+	While hasAction2(bonus)
+		SelectLeftMenu(6)
+	  	Sleep(1)
+	  Wend
+Fend
+
+Procedure Return(N=1)
+	For i=1 To N
+		MovingClick(20,20)
+	Next
+Fend
+
+Procedure GetOutOfOujou()
+	SelectBottomMenu(0)
+	//MovingClick(20, 855)
+Fend
+
+Procedure MoveBottomMenu()
+	Dim items[] = "戦闘", "キャラ", "仲間", "装備", "成長", "バッグ", "商店"
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	Repeat
+		BalloonAtMouse("メイン画面下メニューに移動")
+		n = POPUPMENU(items)
+		Balloon()
+		SelectBottomMenu(n)
+	Until ! (0 <= n And n < Length(items))
+Fend
+
+Procedure MoveLeftMenu()
+	Dim items[] = "傭兵", "PK", "戦闘", "BOSS", "魔王領域", "王城", "Stage Bonus"
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	Repeat
+		BalloonAtMouse("メイン画面左メニューに移動")
+		n = POPUPMENU(items)
+		Balloon()
+		SelectLeftMenu(n)
+	Until ! (0 <= n And n < Length(items))
+Fend
+
+Procedure MoveRightMenu()
+	Dim items[] = "シェア", "メール", "日常", "成就"
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	Repeat
+		BalloonAtMouse("メイン画面右メニューに移動")
+		n = POPUPMENU(items)
+		Balloon()
+		SelectRightMenu(n)
+	Until ! (0 <= n And n < Length(items))
+Fend
+
+Procedure MoveOujouBottomMenu()
+	Dim items[] = "貴族", "ギルド", "経験塔", "BOSS", "闘技場", "女神"
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	Repeat
+		BalloonAtMouse("王城画面下メニューに移動")
+		n = POPUPMENU(items)
+		Balloon()
+		SelectOujouBottomMenu(n)
+	Until ! (0 <= n And n < Length(items))
+Fend
+
+Procedure MoveGuildDaily()
+	Dim items[] = "ギルド迷宮", "ボス戦", "ギルド任務", "ギルド寄付"
+	For i=1 To Length(items); items[i-1] = i + ". " + items[i-1]; Next
+
+	Repeat
+		BalloonAtMouse("ギルド日常任務に移動")
+		n = POPUPMENU(items)
+		Balloon()
+		SelectGuildMission(n)
+	Until ! (0 <= n And n < Length(items))
+Fend
+
+Procedure HubunSetting()
+	Dim PHubuns[5][1] = 260,300,400,400,400,560,260,640,110,560,110,400
+	// 符文選択
+	Dim PosName[] = "上", "右上", "右下", "下", "左下", "左上"
+	For i=1 To Length(PosName); PosName[i-1] = i + ". " + PosName[i-1]; Next
+
+	x = POPUPMENU(PosName)
+	If x < 0 Then Exit
+
+	MovingClick2(PHubuns[x])
+
+	// 獲得か合成か選択
+	Dim pattern[] = "獲得", "合成"
+	For i=1 To Length(pattern); pattern[i-1] = i + ". " + pattern[i-1]; Next
+
+	x = POPUPMENU(pattern)
+	If 0 <= x And x <= 1 Then
+		HubunSettingHelper(x)
+	Else
+		Balloon("未定義の動作です")
+		Sleep(0.5)
+		Balloon()
+	EndIf
+
+	// ポップアップを閉じる
+	MovingClick(450, 275) 
+	MovingClick(450, 295)
+	MovingClick(455, 195)
+
+	// 一括装着へ移動
+	Moving(260, 750)
+Fend
+
+// Private Procedures/Functions
+Procedure CountBalloon(n, nmax=0, x=G_MOUSE_X-80, y=G_MOUSE_Y-30)
+	s = n
+	If nmax > 0 Then s = s + " / " + nmax
+	Balloon(s, x, y, 4)
+Fend
+
+Procedure BalloonAtMouse(s)
+	// そのうち上下左右と形状の場合分けでも追加する
+	x=G_MOUSE_X-140
+	y=G_MOUSE_Y-70
+	Balloon(s, x, y, 4)
+Fend
+
+Procedure HubunSettingHelper(pattern)
+	// 獲得と合成の２パターンあり
+	MovingClick(260, 640) // 情報確認
+	If pattern = 1 Then MovingClick(260, 660) // 合成 : アイテム合成
+	MovingClick(290, 400) // 獲得方法 -> EXP迷宮
+	MovingClick(300, 690) // 掃討 : 試練産出
+	MovingClick(300, 585) // 確認
+Fend
+
+Procedure SelectBottomMenu(n=0)
+	Dim itemBase[1] = 135, 860
+	Dim itemSpan[1] = 70, 0
+	If n = 0 Then
+		// 戦闘
+		MovingClick(40, 860)
+	Else
+		SelectEquidistantItems2(n-1, 6, itemBase, itemSpan)
+		// キャラ // 仲間 // 装備 // 成長 // バッグ // 商店
+	EndIf
+Fend
+
+Procedure SelectLeftMenu(n=0)
+	Dim itemBase[1] = 35, 280
+	Dim itemSpan[1] = 0, 60
+	If n = 6 Then
+		// Stage Bonus
+		MovingClick(35, 670)
+	Else
+		SelectEquidistantItems2(n, 6, itemBase, itemSpan)
+		// 傭兵 // PK // 戦闘 // BOSS // 魔王領域 // 王城
+	EndIf
+Fend
+
+Procedure SelectRightMenu(n=0)
+	Dim itemBase[1] = 479, 355
+	Dim itemSpan[1] = 0, 54
+	SelectEquidistantItems2(n, 4, itemBase, itemSpan)
+	// シェア // メール // 日常 // 成就
+Fend
+
+Procedure SelectOujouBottomMenu(n=0)
+	Dim itemBase[1] = 150, 750
+	Dim itemSpan[1] = 65, 0
+	SelectEquidistantItems2(n, 6, itemBase, itemSpan)
+	// 貴族 // ギルド // 経験塔 // BOSS // 闘技場 // 女神
+Fend
+
+Procedure SelectGuildMission(n=0)
+	Select n
+		Case 0 // ギルド迷宮
+			MovingClick(150, 460)
+		Case 1 // ボス戦
+			MovingClick(360, 460)
+		Case 2 // ギルド任務
+			MovingClick(150, 620)
+		Case 3 // ギルド寄付
+			MovingClick(360, 620)
+		Default
+			MenuCancel
+	SelEnd
+Fend
+
+Procedure MenuCancel()
+	Balloon("未実装 or キャンセルされました", G_MOUSE_X+10, G_MOUSE_Y, 3)
+	Sleep(0.5)
+	Balloon()
+Fend
+
+Function CheckColor(x, y, r, g=0, b=0, delta=0)
+	AddESOffset(x, y)
+	If r <> 0 Then tr = CheckColorElement(x, y, COL_R, r, delta) Else tr = True
+	If g <> 0 Then tg = CheckColorElement(x, y, COL_G, g, delta) Else tg = True
+	If b <> 0 Then tb = CheckColorElement(x, y, COL_B, b, delta) Else tb = True
+
+	//Print "-- CheckColor(R, G, B) = (" + tr + ", " + tg + ", " + tb + ")"
+	Result = tr And tg And tb
+Fend
+
+Function CheckColor2(p[1], r, g=0, b=0, delta=0)
+	Result = CheckColor(p[IX], p[IY], r, g, b, delta)
+Fend
+
+Function CheckColorElement(x, y, targetColor, value, delta)
+	c = PeekColor(x, y, targetColor)
+	Result =  (value - delta <= c) And (c <= value + delta)
+
+	TextBlock tbcce
+		rl = (value - delta <= c)
+		ru = (c <= value + delta)
+	
+		Print "--- Lower, Upper :: " + rl + ", " + ru
+		Print "--- (x, y) = (" + x + ", " + y + ")"
+ 		Print "--- peek = " + c + " :: targetColor = " + targetColor + ", value = " + value + ", delta = " + delta
+		Result = rl And ru
+	EndTextBlock
+Fend
+
+Procedure DoorClick(door[1], Var flag)
+	// ドアを開くボタン
+	Dim BtnOpen[] = 220,847
+
+	If IsDebug Then Print "start"
+	//If JudgeDoorFlag(door, flag) = True Then Exit
+
+	If IsDebug Then Print "click door"
+	MovingClick2(door)
+	WaitClick(Wait1)
+
+	If JudgeDoorFlag(door, flag) = True Then Exit
+	If IsDebug Then Print "click open"
+	MovingClick2(BtnOpen)
+	WaitClick(Wait4)
+
+	If IsDebug Then Print "finished.."
+Fend
+
+Procedure CheckedClickForNext(button[1])
+	checkNextBtnColor = PeekColorES2(button)
+	If IsDebug Then FormatLocColor("  next button", button, checkNextBtnColor)
+
+	If checkNextBtnColor <> OrgColor Then
+		If IsDebug Then Print "  click next"
+		MovingClick2(button)
+		ClearJudgeFlags
+	Endif
+	Sleep(Wait2/1000)
+Fend
+
+Procedure CheckedClickForBack(button[1])
+	BtnBackColorL = 230
+
+	checkBackBtnColor = PeekColorES2(button, COL_R)
+	If IsDebug Then FormatLocColor("  back button", button, checkBackBtnColor)
+
+	If checkBackBtnColor > BtnBackColorL Then
+		If IsDebug Then Print "  click back"
+		ClearJudgeFlags
+		MovingClick2(button)
+		Sleep(Wait1/1000)
+	Endif
+Fend
+
+Function CheckDoorColor(door[1])
+	DoorGoldL = 240
+	DoorGoldU = 250
+
+	Threshold = 2
+	judge = 0
+
+	For i = 1 To 3
+		doorColor = PeekColorES2(door, COL_R) // 赤成分のみ
+
+		//If  DoorGoldL <= doorColor And doorColor <= DoorGoldU Then
+		If  DoorGoldL <= doorColor Then
+			t = judge + 1
+			judge = t
+		Endif
+		Sleep(0.1)
+	Next
+
+	If judge > Threshold Then
+		RESULT = True
+	Elseif judge = 0 Then
+		RESULT = False
+	Else
+		RESULT = Empty
+	Endif
+Fend
+
+Function JudgeDoorFlag(door[1], Var flag)
+	If flag = Empty Then flag = CheckDoorColor(door)
+	RESULT = flag
+Fend
+
+Procedure ClearJudgeFlags()
+	For i = 0 To 2
+		judgeDoors[i] = Empty
+	Next
+Fend
+
+Procedure PrintFlags()
+	s = "Flags ( "
+	For i = 0 To 2
+		t =  s +  ", " + i + " = " + judgeDoors[i]
+		s = t
+	Next
+	Print s + " )"
+Fend
+
+Function FormatLocColor(term, p[1], color)
+	Result = term + " ( " + p[IX] + ", " + p[IY] + " ) = " + color
+Fend
+
+Function PeekLeftEdge()
+	xBase = 1
+	xStep = 10
+	y = 500
+
+	r = This.PeekLeftHelper(xBase, xStep, y)
+	xBase = r; t = xStep / 10; xStep = Ceil(t)
+
+	r = This.PeekLeftHelper(xBase, xStep, y)
+	If r < 0 Then r = 0
+	
+	//print "Left Base is " + r
+	Result = r
+Fend
+
+Function PeekLeftHelper(xBase, xStep, y)
+	count = 50
+	xMax = xBase + xStep * count
+	For x = xBase To xMax Step xStep
+		//MMV(x, y, 5)
+		//PrintColor(x, y)
+		c = PeekColor(x, y, COL_RGB)
+		if c <> 0 Then Break
+	Next
+	Result = x - xStep
+Fend
+
+Procedure CheckedClick(x0, y0)
+	x = x0
+	y = y0
+	AddESOffset(x, y)
+
+	rCheck = 250
+	Moving(x0, y0)
+
+	While CheckColor(x0, y0, rCheck, 0, 0, 5)
+		MovingClick(x0, y0)
+	Wend
+Fend
+
+Procedure CheckedClick2(p[1])
+	CheckedClick(p[IX], p[IY])
+Fend
+
+Procedure GuildKifuHoushuOnce(pos[1])
+	Dim BOK[] = 300,580
+	Dim BAccept[] = 300,565 // or 戻る（受領済か未達成の場合）
+	MovingClick(pos[IX], pos[IY])
+	MovingClick(BAccept[IX], BAccept[IY])
+	MovingClick(BOK[IX], BOK[IY])
+Fend
+
+Procedure GetKirei()
+	// アクションマークがなくなるまで、取得と分解を繰り返し
+	// 取得：(444, 712)このへん
+	Dim BGet[] = 424, 712
+
+	Moving2(BGet)
+	While hasAction2(BGet)
+		WaitClick(Wait2)
+		KireiGetHelper
+		Return
+
+		KireiAllDecomposition
+		Moving2(BGet)
+	Wend
+Fend
+
+Procedure KireiGetHelper()
+	Dim Search[] = "宝探し１回", "宝探し１０回", "終了"
+	Dim BSearch1[] = 87, 705
+	Dim BSearch10[] = 314, 705
+	Dim BReSearch1[] = 87, 605
+	Dim BReSearch10[] = 314, 605
+	Dim BClose[] = 470, 240
+
+	For i=1 To Length(Search); Search[i-1] = i + ". " + Search[i-1]; Next
+
+	x = POPUPMENU(Search)
+	Select x
+		Case 0; MovingClick2(BSearch1)
+		Case 1; MovingClick2(BSearch10)
+
+		Case 2;
+			Balloon("終了")
+			Sleep(0.5)
+		Default; 
+			Balloon("終了")
+			Sleep(0.5)
+	SelEnd
+	Balloon()
+
+	While (0 <= x And x < 2)
+		x = POPUPMENU(Search)
+		Select x
+			Case 0; MovingClick2(BReSearch1)
+			Case 1; MovingClick2(BReSearch10)
+
+			Case 2;
+				Balloon("終了")
+				Sleep(0.5)
+				Break
+			Default; 
+				Balloon("終了")
+				Sleep(0.5)
+				Break
+		SelEnd
+	Wend
+	Balloon()
+
+	MovingClick2(BClose)
+Fend
+
+Procedure KireiAllDecomposition()
+	Dim BDecomp[] = 90, 715
+	// 分解：(111, 705)
+	Moving2(BDecomp)
+	If hasAction2(BDecomp) Then
+		WaitClick(Wait2)
+		AllDecomposition(1)
+	EndIf
+Fend
+
+Procedure SwitchStageBoss()
+	Dim SW[] = 463, 768
+	MovingClick2(SW)
+Fend
+
+// Helper Procedure(s)/Function(s)
+Procedure AllDecomposition(nSkip=0)
+	// 一括分解
+	Dim itemBase[1] = 390, 270
+	Dim itemSpan[1] = 0, 80
+	Dim BoxClose[1] = 450,195
+
+	// 分解を下から順にクリック
+	For i = nSkip To 4
+		SelectEquidistantItems2(4-i, 5, itemBase, itemSpan)
+	Next
+	MovingClick2(BoxClose) // 閉じる
+Fend
+
+Procedure SelectEquidistantItems(n, nItems, x0, y0, dx, dy)
+	If ! (0 <= n And n < nItems) Then Exit
+
+	x = x0 + n * dx
+	y = y0 + n * dy
+	MovingClick(x, y)
+Fend
+
+Procedure SelectEquidistantItems2(n, nItems, p0[1], dp[1])
+	SelectEquidistantItems(n, nItems, p0[IX], p0[IY], dp[IX], dp[IY])
+Fend
+
+Function addMenu(Var menu[], menuPlus[])
+	nMenuB = LENGTH(menu)
+	nMenuPlus = LENGTH(menuPlus)
+	nMenu = RESIZE(menu, nMenuB + nMenuPlus - 1)
+
+	For i = 0 To nMenuPlus-1
+		menu[nMenuB + i] = menuPlus[i]
+	Next
+
+	RESULT = nMenu
+Fend
+
+Function hasAction(x, y)
+	TextBlock tbha
+		アイコン右上の赤地のビックリマークを検出する
+		Color(R,G,B) = ( 232, 43, 26 )
+		RGB = 15215386
+		ある程度、検出に範囲を持たせるか？
+	EndTextBlock
+
+	Const rgbAction = 15215386
+	AddESOffset(x, y)
+	x = x + 5
+	y = y - 5
+	For dx=1 To 5
+		tx = x + dx
+		For dy=1 To 5
+			ty = y - dy
+			//PrintColorES(tx, ty)
+			If PeekColor(tx, ty, COL_RGB) = rgbAction Then
+				RESULT = True
+				Exit
+			EndIf
+		Next
+	Next
+	
+	RESULT = False
+Fend
+
+Function hasAction2(p[1])
+	RESULT = hasAction(p[IX],p[IY])
+Fend
+
+Function checkActionPos(x, y)
+	r = False
+	Print "(x, y) = (" + x + ", " + y + ")"
+	For dx=0 To 10
+		For dy=0 To 10
+			If hasAction(x+dx, y-dy) Then
+				Print "hit !   " + (x+dx) + ", " + (y-dy) + " : offset = " + dx + ", " + dy
+				r = True
+				//Exit
+			EndIf
+		Next
+	Next
+
+	If ! r Then Print "no hit ... try next"
+	RESULT = r
+Fend
+
+Procedure Moving(x, y)
+	AddESOffset(x, y)
+	// deltaの取り方
+	// 7, 36, 118
+	// 3, 22, 153
+	// 3, 13, 53, 213
+	// 7, 50
+	DeltaMove(x, y, 213)
+	DeltaMove(x, y, 53)
+	DeltaMove(x, y, 13)
+	DeltaMove(x, y, 3)
+	MMV(x, y, Wait0)
+Fend
+
+Procedure Moving2(p[1])
+	Moving(p[IX], p[IY])
+Fend
+
+Procedure MovingClick(x, y, n=1)
+	Moving(x, y)
+
+	For i = 1 To n
+		WaitClick(Wait1)
+	Next
+Fend
+
+Procedure MovingClick2(p[1], n=1)
+	MovingClick(p[IX], p[IY], n)
+Fend
+
+Procedure WaitClick(wait)
+	Sleep(wait/1000)
+	BTN(LEFT,CLICK)
+	Sleep(Wait1/1000)
+Fend
+
+Procedure DeltaMoveHelper(f, fe, d, Var df, Var n, Var ne)
+	If fe >= f Then df = d Else df = -d
+	ne = INT( (fe - f) / df )
+	n = 1
+Fend
+
+Procedure DeltaMove(xe, ye, d)
+	Dim x, dx, nx, nxe
+	Dim y, dy, ny, nye
+
+	x = GetMousePosESX()
+	y = GetMousePosESY()
+	AddESOffset(x, y)
+
+	DeltaMoveHelper(x, xe, d, dx, nx, nxe)
+	DeltaMoveHelper(y, ye, d, dy, ny, nye)
+
+	updated = (nx < nxe OR ny < nye)
+	While updated
+		updated = False
+
+		If nx < nxe Then
+			x = x + dx; nx = nx + 1; updated = True
+		EndIf
+		If ny < nye Then
+			y = y + dy; ny = ny + 1; updated = True
+		EndIf
+
+		MMV(x, y, Wait0)
+	Wend
+Fend
+
+Procedure Drag(dx, dy)
+	Dim p[1]
+	GetMousePosES2(p)
+	Sleep(Wait2/1000)
+
+	BTN(LEFT, DOWN)
+	Moving(p[IX]+dx, p[IY]+Dy)
+	Sleep(Wait3/1000)
+	BTN(LEFT, UP)
+
+	Moving2(p)
+	Sleep(Wait2/1000)
+Fend
+
+Procedure Drag2(dp[1])
+	Drag(dp[IX], dp[IY])
+Fend
+
+Function PeekColorES(x, y, rgb=0)
+	AddESOffset(x, y)
+	RESULT = PeekColor(x, y, rgb)
+Fend
+
+Function PeekColorES2(p[1], rgb=0)
+	RESULT = PeekColorES(p[IX], p[IY], rgb)
+Fend
+
+Procedure GetMousePosES2(Var p[1])
+	p[IX] = G_MOUSE_X
+	p[IY] = G_MOUSE_Y
+	SubCLOffset2(p)
+	SubESOffset2(p)
+Fend
+
+Function GetMousePosESX()
+	RESULT = G_MOUSE_X - CLX - ESBaseX
+Fend
+
+Function GetMousePosESY()
+	RESULT = G_MOUSE_Y - CLY - ESBaseY
+Fend
+
+Procedure AddESOffset(Var x, Var y)
+	x = x + ESBaseX
+	y = y + ESBaseY
+Fend
+
+Procedure SubESOffset(Var x, Var y)
+	x = x - ESBaseX
+	y = y - ESBaseY
+Fend
+
+Procedure AddESOffset2(Var p[1])
+	AddESOffset(p[IX], p[IY])
+Fend
+
+Procedure SubESOffset2(Var p[1])
+	SubESOffset(p[IX], p[IY])
+Fend
+
+Procedure AddCLOffset(Var x, Var y)
+	x = x + CLX
+	y = y + CLY
+Fend
+
+Procedure SubCLOffset(Var x, Var y)
+	x = x - CLX
+	y = y - CLY
+Fend
+
+Procedure AddCLOffset2(Var p[1])
+	AddCLOffset(p[IX], p[IY])
+Fend
+
+Procedure SubCLOffset2(Var p[1])
+	SubCLOffset(p[IX], p[IY])
+Fend
+
+Function FormatPosInfo(text, x, y)
+	RESULT = text + " (x, y) = (" + x + ", " + y + ")"
+Fend
+
+Procedure PrintOffsetPos(x, y)
+	Print FormatPosInfo("<#TAB>Screen", x, y)
+	SubCLOffset(x, y)
+	Print FormatPosInfo("<#TAB> => Client", x, y)
+	SubESOffset(x, y)
+	Print FormatPosInfo("<#TAB><#TAB> => ES", x, y)
+Fend
+
+Procedure PrintESBase()
+	Print FormatPosInfo("ESBase", ESBaseX, ESBaseY)
+Fend
+
+Procedure PrintColor(x, y, layer="Client")
+	rgb = PeekColor(x, y, COL_RGB)
+	rColor = PeekColor(x, y, COL_R)
+	gColor = PeekColor(x, y, COL_G)
+	bColor = PeekColor(x, y, COL_B)
+	Print FormatPosInfo(layer + " Mouse", x, y) + " : Color(R,G,B) = ( " + rColor + ", " + gColor + ", " + bColor + " ) : RGB = " + rgb
+Fend
+
+Procedure PrintColorScreen(x, y)
+	SubCLOffset(x, y)
+	PrintColor(x, y, "Screen")
+Fend
+
+Procedure PrintColorClient(x, y)
+	PrintColor(x, y)
+Fend
+
+Procedure PrintColorES(x, y)
+	AddESOffset(x, y)
+	PrintColor(x, y, "    ES")
+Fend
+
+Procedure PrintWindowStatus()
+	scx = Status(WinId, ST_CLX)
+	scy = Status(WinId, ST_CLY)
+	sx = Status(WinId, ST_X)
+	sy = Status(WinId, ST_Y)
+	Print "Client Position ?"
+	Print FormatPosInfo("<#TAB>(ST_CLX, ST_CLY)", scx, scy)
+	Print FormatPosInfo("<#TAB>(ST_X, ST_Y)", sx, sy)
+Fend
+
+Procedure TestPosColor()
+	For i = 1 To 5
+		x = G_MOUSE_X
+		y = G_MOUSE_Y
+		x0 = x
+		y0 = y
+		PrintColorScreen(x, y)
+		SubCLOffset(x0, y0)
+		PrintColorClient(x0, y0)
+		SubESOffset(x0, y0)
+		PrintColorES(x0, y0)
+
+		PrintOffsetPos(x, y)
+		Sleep(1)
+	Next
+Fend
+
+Procedure Test()
+	// 魔法学院の半自動化
+	// 優先順位に従って研究をクリックする
+	// ES (x, y) = (185, 706)
+	// yを710あたりに固定してxをスキャンする
+	y = 709
+	// xspan = 85 ?
+	// 75, 160, 245, 330, 415
+	xinit = 75; xend = 85; Sub(xinit, xend, y)
+	xinit = 165; xend = 175; Sub(xinit, xend, y)
+	xinit = 245; xend = 255; Sub(xinit, xend, y)
+	xinit = 330; xend = 340; Sub(xinit, xend, y)
+	xinit = 415; xend = 425; Sub(xinit, xend, y)
+
+TextBlock tbtest
+	---
+	magic :  (x, y) = (170, 709)
+	magic :  (x, y) = (171, 709)
+	magic :  (x, y) = (172, 709)
+	magic :  (x, y) = (173, 709)
+	magic :  (x, y) = (176, 709)
+	magic :  (x, y) = (177, 709)
+	magic :  (x, y) = (178, 709)
+	magic :  (x, y) = (179, 709)
+	magic :  (x, y) = (180, 709)
+	---
+	magic :  (x, y) = (330, 709)
+	magic :  (x, y) = (331, 709)
+	magic :  (x, y) = (334, 709)
+	magic :  (x, y) = (335, 709)
+	magic :  (x, y) = (336, 709)
+	magic :  (x, y) = (337, 709)
+	magic :  (x, y) = (338, 709)
+	magic :  (x, y) = (339, 709)
+	magic :  (x, y) = (340, 709)
+	---
+	magic :  (x, y) = (415, 709)
+	magic :  (x, y) = (416, 709)
+	magic :  (x, y) = (417, 709)
+	magic :  (x, y) = (418, 709)
+	magic :  (x, y) = (419, 709)
+	magic :  (x, y) = (420, 709)
+EndTextBlock
+Fend
+
+Procedure Sub(x0, xe, y)
+	Print "---"
+	For x = x0 To xe Step 10
+		Moving(x, y)
+		checkActionPos(x, y)
+	Next
+Fend
+
+EndModule

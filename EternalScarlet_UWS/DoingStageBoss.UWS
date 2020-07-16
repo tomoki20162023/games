@@ -1,0 +1,6 @@
+Call .\ES
+With ES
+	.GetStageBonus
+	.CheckRightMenu
+	.ClearItemBag
+EndWith

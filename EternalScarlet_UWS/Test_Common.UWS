@@ -1,0 +1,14 @@
+// Common.UWSのテスト
+Call .\Common
+
+Common.Moving(1000, 400)
+Sleep(1)
+Common.Moving(0, 0)
+Sleep(1)
+Common.Moving(1000, 500)
+Sleep(1)
+Common.Drag(100, 300)
+Sleep(1)
+
+Dim f=0, fe=1, d=2, df=5, n=9, ne=111
+Common._DeltaMoveHelper(f, fe, d, df, n, ne)

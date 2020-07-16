@@ -1,0 +1,4 @@
+FOR t = 1 TO 80
+	BTN(LEFT,CLICK)
+	Sleep(0.133)
+NEXT
