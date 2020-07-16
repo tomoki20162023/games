@@ -5,3 +5,8 @@
 ## width : 302 px
 ## height : 533 px
 
+es.go.mugen() {
+	es.move.center
+	moving-click 0 40
+}
+
