@@ -11,7 +11,7 @@ es.mugen() {
 	declare -a local diff_open=(70 0 -70)
 	declare -a local diff_door=(70 70 -140)
 
-	es.move-corner 1
+	es.move.corner 1
 	moving 80 240
 	msleep 500
 
