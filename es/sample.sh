@@ -526,9 +526,15 @@ es.guild.kifu.first() {
 	es.guild.kifu.10 first
 }
 
-es.switch.stage-attack() {
+es.stage.switch() {
 	es.move.corner 4
 	moving-click -30 -80
+}
+es.stage.item.clear() {
+	es.stage.switch
+	msleep 500
+	es.item.clear
+	es.stage.switch
 }
 
 es.pk() {

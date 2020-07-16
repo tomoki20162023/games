@@ -10,3 +10,13 @@ es.go.mugen() {
 	moving-click 0 40
 }
 
+es.get-bonuses() {
+	local n=${1:-1}
+	local i
+	for(( i=0; i<${n}; i++ ))
+	do
+		es.get-bonus
+		msleep 500
+	done
+}
+
