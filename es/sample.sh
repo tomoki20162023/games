@@ -519,11 +519,11 @@ es.act.syoutai-hyouka() {
 	es.back
 }
 
-es.guild.kifu-first() {
+es.guild.kifu.first() {
 	es.menu.select ob 2
 	sleep 5
 	es.guild.select-ninmu 3
-	es.guild.kifu-10 first
+	es.guild.kifu.10 first
 }
 
 es.switch.stage-attack() {
@@ -587,7 +587,7 @@ es.daily.housyuh() {
 	moving 62 64 # 1-block ???
 }
 
-es.guild.kifu-housyu() {
+es.guild.kifu.housyu() {
 	local x=-30
 	local dx=65
 	local i
@@ -597,11 +597,11 @@ es.guild.kifu-housyu() {
 
 	for(( i=0; i<3; i++ ));
 	do
-		_es.guild.kifu-housyu ${x}
+		_es.guild.kifu.housyu ${x}
 		let "x += dx"
 	done
 }
-_es.guild.kifu-housyu() {
+_es.guild.kifu.housyu() {
 	local negx=$(( -${1} ))
 	moving-click ${1} 140
 	moving-click ${negx} -160
