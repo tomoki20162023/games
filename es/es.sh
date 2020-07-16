@@ -30,7 +30,7 @@ es.move.center() {
 	xte "mousemove 239 403"
 }
 
-es.game-start() {
+es.game.start() {
 	if [ -z "${2}" ]; then
 		es.move.corner 2
 		moving-click 50 -100 #HD版クリック
@@ -87,7 +87,7 @@ es.change-5tabs() {
 	click
 }
 
-es.guild.kifu-10() {
+es.guild.kifu.10() {
 	es.move.center
 	moving-click 80 40
 
@@ -96,7 +96,7 @@ es.guild.kifu-10() {
 		moving-click 0 30
 	fi
 }
-es.guild.kifu-300() {
+es.guild.kifu.300() {
 	moving-click -70 0
 	moving-click 70 120
 	moving 0 -120
