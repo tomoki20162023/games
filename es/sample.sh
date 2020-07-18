@@ -333,7 +333,7 @@ es.hubun.setting() {
 	click
 
 	case ${2:-0} in
-		1)
+		2)
 	# 合成のケース
 	es.move.center
 	moving-click 0 100
@@ -345,7 +345,7 @@ es.hubun.setting() {
 	moving-click 30 -70
 	msleep 500
 			;;
-		2)
+		1)
 	# 獲得のケース
 	es.move.center
 	moving-click 0 100
