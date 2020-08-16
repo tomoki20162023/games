@@ -117,12 +117,14 @@ msleep() {
 }
 
 clicks() {
-	local n=${1:-4}
+	local n=${1:-5}
+	local s=${2:-250}
 	local i
 	for(( i=1; i<=${n}; i++ ));
 	do
 		printf "%3d / %3d\r" ${i} ${n}
-		xte "mouseclick 1" "usleep 250000"
+		xte "mouseclick 1"
+		msleep ${s}
 	done
 }
 

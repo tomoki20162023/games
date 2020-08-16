@@ -29,49 +29,6 @@ es.move.corner() {
 es.move.center() {
 	xte "mousemove 239 403"
 }
-
-es.game.start() {
-	if [ -z "${2}" ]; then
-		es.move.corner 2
-		moving-click 50 -100 #HD版クリック
-		countdown 5
-	fi
-
-	es.move.center
-	moving-click 120 110 # サーバ選択開く
-	moving-click 0 -150 # サーバグループ選択
-	case ${1:-0} in
-		1)
-			moving 60 157
-			drag 0 -250
-			drag 0 -250
-			click # s1 選択
-			;;
-		15)
-			moving-click 60  95 # s15 選択
-			;;
-		19)
-			moving-click 60 -29 # s19 選択
-			;;
-		20)
-			moving-click 60 -60 # s20 選択
-			;;
-		*)
-			echo "no matched..."
-			return 2
-			;;
-	esac
-
-	es.move.corner 4
-	moving-click 0 -90
-
-	countdown 3
-	es.act.adjust
-	msleep 500
-	es.move.center
-	moving-click 0 120 # 開始時確認ボタン
-}
-
 es.change-5tabs() {
 	local i
 	local x=30
@@ -200,6 +157,60 @@ es.act.johju() {
 	moving-click -17 309
 	moving-click -130 190
 	es.back
+}
+
+
+es.game.start () {
+    if [ -z "${2}" ]; then
+        es.move.corner 2;
+        moving-click 50 -100;
+        countdown 5;
+    fi;
+    es.move.center;
+    moving-click 120 110;
+    case ${1:-0} in 
+        [1-9] | 1[0-9] | 20)
+            moving-click 0 -150
+        ;;
+        2[1-9])
+            moving-click 0 -185
+        ;;
+        ? | *)
+            echo サーバグループが選択できません。;
+            return 2
+        ;;
+    esac;
+    case ${1:-0} in 
+        1)
+            moving 60 157;
+            drag 0 -250;
+            drag 0 -250;
+            xte "mouseclick 1" "usleep 300000"
+        ;;
+        15)
+            moving-click 60 95
+        ;;
+        19)
+            moving-click 60 -29
+        ;;
+        20)
+            moving-click 60 -60
+        ;;
+        22)
+            moving-click 60 0
+        ;;
+        *)
+            echo "サーバが選択できません";
+            return 3
+        ;;
+    esac;
+    es.move.corner 4;
+    moving-click 0 -90;
+    countdown 3;
+    es.act.adjust;
+    msleep 500;
+    es.move.center;
+    moving-click 0 120
 }
 
 
