@@ -1,0 +1,61 @@
+## Temporary Command for ES
+bind e eval 'command -c es' 'echo "Eternal Scarlet commands"'
+
+# es commands
+bind -c es e stuff "es."
+bind -c es a eval 'command -c esa' 'stuff "es.act."'
+bind -c esa a eval 'command -c esaa'
+bind -c esaa d stuff "adjust"
+bind -c esaa t stuff "attack-boss"
+bind -c esa c stuff "check-maid-cafe"
+bind -c esa e stuff "exp-tower-next"
+bind -c esa j stuff "johju"
+bind -c esa k stuff "kinka-shiren"
+bind -c esa m eval 'command -c esam' 'stuff "ma"'
+bind -c esam g stuff "gic-research"
+bind -c esam i stuff "il-kaisyu"
+bind -c esa s eval 'command -c esas' 'stuff "syou"'
+bind -c esas g stuff "gou-kyouka"
+bind -c esas t stuff "tai-kyouka"
+bind -c esa w stuff "weekly.diamond-kaisyu"
+bind -c es b stuff "es.back"
+bind -c es d eval 'command -c esd' 'stuff "es.daily."'
+bind -c esd c stuff 'completed '
+bind -c esd h stuff 'housyuh'
+bind -c esd n stuff 'nikkatsu'
+bind -c es e stuff "es.event."
+bind -c es f eval 'command -c esf' 'stuff "es.first."'
+bind -c esf a stuff "actions"
+bind -c esf c stuff "chat"
+bind -c esf m eval 'command -c esfm' 'stuff "ma"'
+bind -c esfm i stuff "id-cafe"
+bind -c esfm z stuff "ze"
+bind -c esf s stuff "shop"
+bind -c es g eval 'command -c esg' 'stuff "es.guild."'
+bind -c esg k eval 'command -c esgk' 'stuff "kifu."'
+bind -c esgk 1 stuff "10"
+bind -c esgk 3 stuff "300"
+bind -c esgk f stuff "first"
+bind -c esgk h stuff "housyu"
+bind -c esg m stuff "maze"
+bind -c esg n stuff "nikkatsu"
+bind -c esg s stuff "select-ninmu"
+bind -c es h eval 'command -c esh' 'stuff "es.hubun."' 'echo "[cps]"'
+bind -c esh c stuff "check"
+bind -c esh p stuff "position"
+bind -c esh s stuff "setting"
+bind -c es i eval 'command -c esi' 'stuff "es.item."'
+bind -c esi c stuff "clear"
+bind -c esi g stuff "get "
+bind -c es m eval 'command -c esm' 'stuff "es.menu."'
+bind -c esm b stuff "bottom "
+bind -c esm l stuff "left "
+bind -c esm o stuff "oujou-bottom "
+bind -c esm r stuff "right "
+bind -c es o stuff "es.oujou.tougijou"
+bind -c es p stuff "es.pk"
+bind -c es s eval 'command -c ess' 'stuff "es.stage."' 'echo "[gis]"'
+bind -c ess g stuff "get-bonus"
+bind -c ess i stuff "item.clear"
+bind -c ess s stuff "switch"
+
