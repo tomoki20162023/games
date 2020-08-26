@@ -112,17 +112,24 @@ es.item.clear() {
 	moving-click -110 -35
 	moving 110 0
 
-	_es.decomposition
+	_es.decomposition 1
 	click
 	msleep 300
 	es.back
 }
 	
 _es.decomposition() {
+	local skip=${1:-0}
+
 	xte "mousemove 328 530"
 	for(( i=0; i<5; i++ ));
 	do
-		moving-click 0 -47
+		if [ ${skip} -gt 0 ]; then
+			moving 0 -47
+			let skip--
+		else
+			moving-click 0 -47
+		fi
 	done
 	moving-click 30 -50
 	msleep 300
