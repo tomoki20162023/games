@@ -204,7 +204,7 @@ es.game.start () {
             moving-click 60 -60
         ;;
         22)
-            moving-click 60 0
+            moving-click 60 32
         ;;
         *)
             echo "サーバが選択できません";
