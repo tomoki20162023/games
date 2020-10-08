@@ -27,7 +27,7 @@ es.stage.get-bonus() {
 
 es.stage.consume() {
 	# ボーナス回収
-	es.stage.get-bonus
+	es.stage.get-bonus 2
 
 	# 王城へ行く
 	es.menu.left 6
@@ -35,7 +35,7 @@ es.stage.consume() {
 	# アイテムクリア
 	es.item.clear
 
-	// 城下町へ戻る
+	# 城下町へ戻る
 	es.menu.bottom 1
 }
 
