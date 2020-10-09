@@ -249,8 +249,9 @@ es.first.shop() {
 	moving-click -230 -360
 	msleep 500
 
-	moving-click 20 150
-	moving-click 50 90
+	# moving-click 20 150
+	moving-click 0 330
+	moving-click 70 -90
 	moving-click 70 -80
 	moving-click -20 30
 
